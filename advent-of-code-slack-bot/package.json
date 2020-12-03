@@ -1,0 +1,23 @@
+{
+  "name": "slack-bot",
+  "version": "1.0.0",
+  "description": "Slack bot for handling per-channel communications",
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fcamblor/gas-bot-starter.git"
+  },
+  "author": "fcamblor",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/fcamblor/gas-bot-starter/issues"
+  },
+  "homepage": "https://github.com/fcamblor/gas-bot-starter#readme",
+  "devDependencies": {
+    "@google/clasp": "2.3.0",
+    "typescript": "3.9.7"
+  },
+  "dependencies": {
+    "@types/google-apps-script": "1.0.20"
+  }
+}
