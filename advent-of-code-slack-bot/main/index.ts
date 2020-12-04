@@ -66,7 +66,7 @@ type LeaderboardAttrs = {
 };
 
 type MemberStatsAttrs = {
-  id: number;
+  id: string;
   name: string;
   global_score: number;
   local_score: number;
@@ -80,12 +80,14 @@ type CompletionStarsAttrs = Record<DayStars, {
 }>
 
 type Member = {
+  id: string;
   name: string;
   score: number;
   gold_stars: string;
   gold_stars_count: number;
   silver_stars: string;
   silver_stars_count: number;
+  last_star_ts: number;
 };
 
 class Leaderboard {
@@ -104,12 +106,14 @@ class Leaderboard {
             };
           }, { gold_stars_count: 0, silver_stars_count: 0 });
           return {
+            id: m.id,
             name: m.name,
             score: m.local_score,
             gold_stars_count,
             silver_stars_count,
             gold_stars: Leaderboard.range(gold_stars_count).map(_ => '⭐').join(''),
-            silver_stars: Leaderboard.range(silver_stars_count).map(_ => '🌟').join('')
+            silver_stars: Leaderboard.range(silver_stars_count).map(_ => '🌟').join(''),
+            last_star_ts: m.last_star_ts
           };
         });
   }
@@ -138,10 +142,14 @@ ${this.sortedMembers().map((m, idx) => `${Leaderboard.medalForIndex(idx)}${idx+1
 }
 
 function doPost(e){
+  AdventOfCodeBot.INSTANCE.log('Received payload: ' + JSON.stringify(e));
   var payload = JSON.parse(e.postData.contents);
   if(PROPS.SLACK_CHALLENGE_ACTIVATED === "true") {
     // ScoringBot.INSTANCE.log("Challenge activated and returned !");
     return ContentService.createTextOutput(payload.challenge);
+  } else if(payload.action === 'refreshLeaderboard') {
+    AdventOfCodeBot.INSTANCE.refreshLeaderboard();
+    return;
   } else {
     AdventOfCodeBot.INSTANCE.log('POST event: ' + JSON.stringify(payload));
   }
@@ -199,7 +207,11 @@ Following commands are available :
 
   showLeaderboard(event: ChannelMessageEvent) {
     const channel = event.channel;
+    const leaderboard = this.fetchLeaderboard();
+    this.botShouldSay(channel, leaderboard.buildHallOfFameMessage(), event.thread_ts);
+  }
 
+  fetchLeaderboard() {
     var payloadText = UrlFetchApp.fetch(`https://adventofcode.com/${CURRENT_YEAR}/leaderboard/private/view/${PROPS.ADVENT_OF_CODE_PRIVATE_LEARDERBOARD_CODE}.json`, {
       method: 'get',
       headers: {
@@ -207,9 +219,17 @@ Following commands are available :
       }
     }).getContentText();
     this.log("leaderboard payload : "+payloadText);
-    const leaderboard = new Leaderboard(JSON.parse(payloadText));
+    return new Leaderboard(JSON.parse(payloadText));
+  }
 
-    this.botShouldSay(channel, leaderboard.buildHallOfFameMessage(), event.thread_ts);
+  refreshLeaderboard() {
+    const leaderboard = this.fetchLeaderboard();
+
+    // TODO:
+    //  - read previous leaderboard state from the spreadsheet
+    //  - compare it to actual fetched leaderboard
+    //  - produce "diffs" (member scores / stars)
+    //  - Make the bot send a message with the diff
   }
 
   ensureSheetCreated(sheetName: string, headerCells: string[]|null, headerCellsType: "formulas"|"values"|null) {
