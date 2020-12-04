@@ -5,8 +5,12 @@ const PROPS = {
   SLACK_ACCESS_TOKEN: PropertiesService.getScriptProperties().getProperty('SLACK_ACCESS_TOKEN'),
   LOG_ENABLED: PropertiesService.getScriptProperties().getProperty('LOG_ENABLED'),
   SPREADSHEET_ID: PropertiesService.getScriptProperties().getProperty('SPREADSHEET_ID'),
-  SLACK_CHALLENGE_ACTIVATED: PropertiesService.getScriptProperties().getProperty('SLACK_CHALLENGE_ACTIVATED')
+  SLACK_CHALLENGE_ACTIVATED: PropertiesService.getScriptProperties().getProperty('SLACK_CHALLENGE_ACTIVATED'),
+  ADVENT_OF_CODE_PRIVATE_LEARDERBOARD_CODE: PropertiesService.getScriptProperties().getProperty('ADVENT_OF_CODE_PRIVATE_LEARDERBOARD_CODE'),
+  ADVENT_OF_CODE_SESSION_COOKIE: PropertiesService.getScriptProperties().getProperty('ADVENT_OF_CODE_SESSION_COOKIE')
 };
+
+const CURRENT_YEAR = new Date().getUTCFullYear();
 
 interface SlackEvent {
   text: string;
@@ -50,21 +54,104 @@ interface MessageInfos {
   text: string;
 }
 
+type AdventDays = "1"|"2"|"3"|"4"|"5"|"6"|"7"|"8"|"9"|"10"|"11"|"12"|"13"|"14"|"15"|"16"|"17"|"18"|"19"|"20"|"21"|"22"|"23"|"24"|"25";
+const SILVER_STAR = "1";
+const GOLD_STAR = "2";
+type DayStars = (typeof SILVER_STAR)|(typeof GOLD_STAR);
+
+type LeaderboardAttrs = {
+  event: number,
+  owner_id: number,
+  members: Record<string, MemberStatsAttrs>;
+};
+
+type MemberStatsAttrs = {
+  id: number;
+  name: string;
+  global_score: number;
+  local_score: number;
+  stars: number;
+  last_star_ts: number;
+  completion_day_level: Record<AdventDays,CompletionStarsAttrs>
+};
+
+type CompletionStarsAttrs = Record<DayStars, {
+  get_star_ts: string;
+}>
+
+type Member = {
+  name: string;
+  score: number;
+  gold_stars: string;
+  gold_stars_count: number;
+  silver_stars: string;
+  silver_stars_count: number;
+};
+
+class Leaderboard {
+  constructor(public readonly attrs: LeaderboardAttrs) {
+  }
+
+  sortedMembers(): Member[] {
+    return Object.keys(this.attrs.members)
+        .map(k => this.attrs.members[k])
+        .sort((m1, m2) => m2.local_score - m1.local_score)
+        .map(m => {
+          const { gold_stars_count, silver_stars_count } = Object.keys(m.completion_day_level).reduce((starsStats, day) => {
+            return {
+              gold_stars_count: starsStats.gold_stars_count + ((m.completion_day_level[day][GOLD_STAR] !== undefined)?1:0),
+              silver_stars_count: starsStats.silver_stars_count + ((m.completion_day_level[day][GOLD_STAR] === undefined && m.completion_day_level[day][SILVER_STAR] !== undefined)?1:0)
+            };
+          }, { gold_stars_count: 0, silver_stars_count: 0 });
+          return {
+            name: m.name,
+            score: m.local_score,
+            gold_stars_count,
+            silver_stars_count,
+            gold_stars: Leaderboard.range(gold_stars_count).map(_ => '⭐').join(''),
+            silver_stars: Leaderboard.range(silver_stars_count).map(_ => '🌟').join('')
+          };
+        });
+  }
+
+  buildHallOfFameMessage() {
+    let message = `Leaderboard :
+${this.sortedMembers().map((m, idx) => `${Leaderboard.medalForIndex(idx)}${idx+1}) *[${m.score}]* ${m.gold_stars} ${m.silver_stars} ${m.name}`).join("\n")}
+`;
+    return message;
+  }
+
+  private static medalForIndex(index: number) {
+    switch(index) {
+      case 0: return '🥇';
+      case 1: return '🥈';
+      case 2: return '🥉';
+      default: return '';
+    }
+  }
+
+  private static range(max: number) {
+    const arr = Array(max);
+    for(var i=1; i<=max; i++){ arr[i-1] = i; }
+    return arr;
+  }
+}
+
 function doPost(e){
   var payload = JSON.parse(e.postData.contents);
   if(PROPS.SLACK_CHALLENGE_ACTIVATED === "true") {
     // ScoringBot.INSTANCE.log("Challenge activated and returned !");
     return ContentService.createTextOutput(payload.challenge);
   } else {
-    ScoringBot.INSTANCE.log('POST event: ' + JSON.stringify(payload));
+    AdventOfCodeBot.INSTANCE.log('POST event: ' + JSON.stringify(payload));
   }
 
   var event: SlackEvent = payload.event;
-  return ScoringBot.INSTANCE.handle(event);
+  return AdventOfCodeBot.INSTANCE.handle(event);
 }
 
-class ScoringBot {
-  static readonly INSTANCE = new ScoringBot();
+class AdventOfCodeBot {
+  static readonly INSTANCE = new AdventOfCodeBot();
 
   private spreadsheetApp: Spreadsheet;
 
@@ -74,12 +161,14 @@ class ScoringBot {
 
   handle(event: SlackEvent): void {
     try {
-      if(ScoringBot.isBotResettedEvent(event)) {
+      if(AdventOfCodeBot.isBotResettedEvent(event)) {
         this.handleBotResetted(event);
-      } else if(ScoringBot.isHelloCommand(event)) {
+      } else if(AdventOfCodeBot.isHelloCommand(event)) {
         this.botShouldSay(event.channel, "Hello world !", event.thread_ts);
-      } else if(ScoringBot.isHelpCommand(event)) {
+      } else if(AdventOfCodeBot.isHelpCommand(event)) {
         this.showHelp(event);
+      } else if(AdventOfCodeBot.isLeaderboardCommand(event)) {
+        this.showLeaderboard(event);
       } else {
         this.log("No callback matched event !");
       }
@@ -101,10 +190,26 @@ class ScoringBot {
 
 Following commands are available :
 - \`!help\` : Shows help
+- \`!leaderboard\` : Show leaderboard !
 - \`!hello\` : Says hello world !
 `;
 
     this.botShouldSay(channel, message, event.thread_ts);
+  }
+
+  showLeaderboard(event: ChannelMessageEvent) {
+    const channel = event.channel;
+
+    var payloadText = UrlFetchApp.fetch(`https://adventofcode.com/${CURRENT_YEAR}/leaderboard/private/view/${PROPS.ADVENT_OF_CODE_PRIVATE_LEARDERBOARD_CODE}.json`, {
+      method: 'get',
+      headers: {
+        'cookie': `session=${PROPS.ADVENT_OF_CODE_SESSION_COOKIE}`
+      }
+    }).getContentText();
+    this.log("leaderboard payload : "+payloadText);
+    const leaderboard = new Leaderboard(JSON.parse(payloadText));
+
+    this.botShouldSay(channel, leaderboard.buildHallOfFameMessage(), event.thread_ts);
   }
 
   ensureSheetCreated(sheetName: string, headerCells: string[]|null, headerCellsType: "formulas"|"values"|null) {
@@ -169,6 +274,7 @@ Following commands are available :
 
   static isBotResettedEvent(event: SlackEvent): event is BotResettedEvent { return event.hasOwnProperty('bot_id'); }
   static isHelloCommand(event: SlackEvent): event is ChannelMessageEvent { return !!event.text.match(/!hello/); }
+  static isLeaderboardCommand(event: SlackEvent): event is ChannelMessageEvent { return !!event.text.match(/!leaderboard/); }
   static isHelpCommand(event: SlackEvent): event is ChannelMessageEvent { return !!event.text.match(/!help/); }
 }
 
