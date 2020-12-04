@@ -337,7 +337,10 @@ Following commands are available :
       this.storeLeaderboard(leaderboard);
 
       if(!diff.isEmpty()) {
+        this.log(`Sending message to slack channel [${channel}]: \n${diff.toBotMessage()}`);
         this.botShouldSay(channel, diff.toBotMessage());
+      } else {
+        this.log(`No diff detected in leaderboard => no message sent to Slack`);
       }
     }catch(e) {
       this.log("Erreur : "+e.toString());
