@@ -6,7 +6,7 @@ const PROPS = {
   LOG_ENABLED: PropertiesService.getScriptProperties().getProperty('LOG_ENABLED'),
   SPREADSHEET_ID: PropertiesService.getScriptProperties().getProperty('SPREADSHEET_ID'),
   SLACK_CHALLENGE_ACTIVATED: PropertiesService.getScriptProperties().getProperty('SLACK_CHALLENGE_ACTIVATED'),
-  ADVENT_OF_CODE_PRIVATE_LEARDERBOARD_CODE: PropertiesService.getScriptProperties().getProperty('ADVENT_OF_CODE_PRIVATE_LEARDERBOARD_CODE'),
+  ADVENT_OF_CODE_PRIVATE_LEADERBOARD_CODE: PropertiesService.getScriptProperties().getProperty('ADVENT_OF_CODE_PRIVATE_LEADERBOARD_CODE'),
   ADVENT_OF_CODE_SESSION_COOKIE: PropertiesService.getScriptProperties().getProperty('ADVENT_OF_CODE_SESSION_COOKIE')
 };
 
@@ -315,7 +315,7 @@ Following commands are available :
   }
 
   fetchLeaderboard() {
-    var payloadText = UrlFetchApp.fetch(`https://adventofcode.com/${CURRENT_YEAR}/leaderboard/private/view/${PROPS.ADVENT_OF_CODE_PRIVATE_LEARDERBOARD_CODE}.json`, {
+    var payloadText = UrlFetchApp.fetch(`https://adventofcode.com/${CURRENT_YEAR}/leaderboard/private/view/${PROPS.ADVENT_OF_CODE_PRIVATE_LEADERBOARD_CODE}.json`, {
       method: 'get',
       headers: {
         'cookie': `session=${PROPS.ADVENT_OF_CODE_SESSION_COOKIE}`
