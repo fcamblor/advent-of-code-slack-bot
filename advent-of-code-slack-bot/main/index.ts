@@ -125,6 +125,52 @@ ${this.sortedMembers().map((m, idx) => `${Leaderboard.medalForIndex(idx)}${idx+1
     return message;
   }
 
+  createDiffFrom(previousLeaderboard: Leaderboard) {
+    const [ actualMembersById, previousMembersById ] = [ this.sortedMembers(), previousLeaderboard.sortedMembers() ]
+        .map(members => members.reduce((membersById, member) => {
+                  membersById[member.id] = member;
+                  return membersById;
+                }, {} as Record<string, Member>));
+
+    const [ actualMemberIds, previousMemberIds] = [ actualMembersById, previousMembersById ].map(Object.keys);
+
+    const { newMembers, existingMembers } = actualMemberIds.reduce((result, memberId) => {
+        let member = actualMembersById[memberId];
+        if(previousMemberIds.indexOf(memberId) !== -1) {
+          result.existingMembers.push(member);
+        } else {
+          result.newMembers.push(member);
+        }
+        return result;
+    }, { newMembers: [] as Member[], existingMembers: [] as Member[] });
+
+    const memberScoreDiffs: MemberScoreDiff[] = existingMembers.map(member => {
+      const previousMember: Member = previousMembersById[member.id];
+
+      const scoreDiff = {
+        scoreDelta: { previous: previousMember.score, actual: member.score },
+        goldStarsDelta: { previous: previousMember.gold_stars_count, actual: member.gold_stars_count },
+        silverStarsDelta: { previous: previousMember.silver_stars_count, actual: member.silver_stars_count }
+      };
+
+      return { member, scoreDiff };
+    }).filter(memberScoreDiff => { // Removing members who have not any delta since previous refresh
+      return ["scoreDelta", "goldStarsDelta", "silverStarsDelta"].reduce((hasAnyDelta, fieldName) => {
+        return hasAnyDelta || (memberScoreDiff.scoreDiff[fieldName].previous !== memberScoreDiff.scoreDiff[fieldName].actual);
+      }, false);
+    });
+
+    return new LeaderboardDiff({ newMembers, memberScoreDiffs });
+  }
+
+  stringify() {
+    return JSON.stringify(this.attrs);
+  }
+
+  public static fromStringifiedJSON(jsonStr: string) {
+    return new Leaderboard(JSON.parse(jsonStr));
+  }
+
   private static medalForIndex(index: number) {
     switch(index) {
       case 0: return '🥇';
@@ -141,6 +187,63 @@ ${this.sortedMembers().map((m, idx) => `${Leaderboard.medalForIndex(idx)}${idx+1
   }
 }
 
+type LeaderboardDiffAttrs = {
+  newMembers: Member[];
+  memberScoreDiffs: MemberScoreDiff[];
+};
+type MemberScoreDiff = {
+  member: Member;
+  scoreDiff: {
+    scoreDelta: Delta<number>;
+    goldStarsDelta: Delta<number>;
+    silverStarsDelta: Delta<number>;
+  }
+};
+type Delta<T> = { previous: T, actual: T };
+
+class LeaderboardDiff {
+  constructor(private attrs: LeaderboardDiffAttrs) {
+  }
+
+  isEmpty(): boolean {
+    return (this.attrs.newMembers.length + this.attrs.memberScoreDiffs.length === 0);
+  }
+
+  toBotMessage(): string {
+    let message = ``;
+    if(this.attrs.newMembers.length) {
+      message += `Welcome to our new members :tada: : ${this.attrs.newMembers.map(m => `*${m.name}*`).join(", ")}\n`;
+    }
+    if(this.attrs.memberScoreDiffs.length) {
+      if(message !== '') {
+        message += "Moreover, "
+      }
+      message += `I just noticed some progressions recently :
+${this.attrs.memberScoreDiffs.map(LeaderboardDiff.showProgressFor).join("\n")}`
+    }
+    return message;
+  }
+
+  stringify() {
+    return JSON.stringify(this.attrs);
+  }
+
+  static showProgressFor(diff: MemberScoreDiff) {
+    const scoreMessages = [];
+    if(diff.scoreDiff.scoreDelta.previous !== diff.scoreDiff.scoreDelta.actual) {
+      scoreMessages.push(`*[+${diff.scoreDiff.scoreDelta.actual - diff.scoreDiff.scoreDelta.previous} pts] `);
+    }
+    if(diff.scoreDiff.silverStarsDelta.previous !== diff.scoreDiff.silverStarsDelta.actual) {
+      scoreMessages.push(`*+${diff.scoreDiff.silverStarsDelta.actual - diff.scoreDiff.silverStarsDelta.previous}🌟 `);
+    }
+    if(diff.scoreDiff.goldStarsDelta.previous !== diff.scoreDiff.goldStarsDelta.actual) {
+      scoreMessages.push(`*+${diff.scoreDiff.goldStarsDelta.actual - diff.scoreDiff.goldStarsDelta.previous}⭐ `);
+    }
+
+    return `- *${diff.member.name}*: ${scoreMessages.join(', ')}`;
+  }
+}
+
 function doPost(e){
   AdventOfCodeBot.INSTANCE.log('Received payload: ' + JSON.stringify(e));
   var payload = JSON.parse(e.postData.contents);
@@ -148,7 +251,7 @@ function doPost(e){
     // ScoringBot.INSTANCE.log("Challenge activated and returned !");
     return ContentService.createTextOutput(payload.challenge);
   } else if(payload.action === 'refreshLeaderboard') {
-    AdventOfCodeBot.INSTANCE.refreshLeaderboard();
+    AdventOfCodeBot.INSTANCE.refreshLeaderboard(payload.channelId);
     return;
   } else {
     AdventOfCodeBot.INSTANCE.log('POST event: ' + JSON.stringify(payload));
@@ -219,17 +322,37 @@ Following commands are available :
       }
     }).getContentText();
     this.log("leaderboard payload : "+payloadText);
-    return new Leaderboard(JSON.parse(payloadText));
+    return Leaderboard.fromStringifiedJSON(payloadText);
   }
 
-  refreshLeaderboard() {
-    const leaderboard = this.fetchLeaderboard();
+  refreshLeaderboard(channel: string) {
+    try {
+      const leaderboard = this.fetchLeaderboard();
 
-    // TODO:
-    //  - read previous leaderboard state from the spreadsheet
-    //  - compare it to actual fetched leaderboard
-    //  - produce "diffs" (member scores / stars)
-    //  - Make the bot send a message with the diff
+      // Reading previous leaderboard
+      const previousLeaderboard = this.readPreviousLeaderboard();
+
+      const diff = leaderboard.createDiffFrom(previousLeaderboard);
+
+      this.storeLeaderboard(leaderboard);
+
+      if(!diff.isEmpty()) {
+        this.botShouldSay(channel, diff.toBotMessage());
+      }
+    }catch(e) {
+      this.log("Erreur : "+e.toString());
+    }
+  }
+
+  readPreviousLeaderboard() {
+    const sheet = this.getSheetByName("Leaderboard");
+    const leaderboardPayload = sheet.getRange(2, 1, 1, 1).getValues()[0][0];
+    return Leaderboard.fromStringifiedJSON(leaderboardPayload);
+  }
+
+  storeLeaderboard(leaderboard: Leaderboard) {
+    const sheet = this.getSheetByName("Leaderboard");
+    sheet.getRange(2, 1, 1, 1).setValues([ [ leaderboard.stringify() ] ]);
   }
 
   ensureSheetCreated(sheetName: string, headerCells: string[]|null, headerCellsType: "formulas"|"values"|null) {
