@@ -17,8 +17,11 @@
   "homepage": "https://github.com/fcamblor/gas-bot-starter#readme",
   "devDependencies": {
     "@google/clasp": "2.3.0",
+    "@types/cheerio": "0.22.22",
     "@types/jest": "26.0.16",
+    "cheerio": "1.0.0-rc.3",
     "jest": "26.6.3",
+    "node-fetch": "2.6.1",
     "ts-jest": "26.4.4",
     "typescript": "3.9.7"
   },
