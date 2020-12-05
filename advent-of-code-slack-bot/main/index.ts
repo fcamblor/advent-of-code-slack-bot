@@ -152,7 +152,7 @@ ${this.sortedMembers().map((m, idx) => `${Leaderboard.medalForIndex(idx)}${idx+1
       const scoreDiff = {
         scoreDelta: { previous: previousMember.score, actual: member.score },
         goldStarsDelta: { previous: previousMember.gold_stars_count, actual: member.gold_stars_count },
-        silverStarsDelta: { previous: previousMember.silver_stars_count, actual: member.silver_stars_count }
+        silverStarsDelta: { previous: previousMember.gold_stars_count+previousMember.silver_stars_count, actual: member.gold_stars_count+member.silver_stars_count }
       };
 
       return { member, scoreDiff };
