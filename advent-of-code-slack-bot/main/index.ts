@@ -376,8 +376,12 @@ Following commands are available :
   }
 
   readPreviousLeaderboard() {
-    const sheet = this.getSheetByName("Leaderboard");
-    const leaderboardPayload = sheet.getRange(2, 1, 1, 1).getValues()[0][0];
+    const sheet = this.ensureSheetCreated("Leaderboard", [ "Previous leaderboard payload" ], "values");
+    const leaderboardPayload = sheet.getRange(2, 1, 1, 1).getValues()[0][0] || JSON.stringify({
+      event: CURRENT_YEAR,
+      owner_id: "",
+      members: {}
+    });
     return Leaderboard.fromStringifiedJSON(leaderboardPayload);
   }
 
