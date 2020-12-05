@@ -220,7 +220,7 @@ class LeaderboardDiff {
       if(message !== '') {
         message += "Moreover, "
       }
-      message += `I just noticed some progressions recently :
+      message += `I just noticed some progress recently :
 ${this.attrs.memberScoreDiffs.map(LeaderboardDiff.showProgressFor).join("\n")}`
     }
     return message;
