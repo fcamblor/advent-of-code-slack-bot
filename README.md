@@ -130,3 +130,7 @@ CRONs have to be configured that way :
 The first time 15min CRON will be triggered, the bot is supposed to post a message into the Slack channel to welcome every members of the board.
 This will be a proof that everything has been setup properly.
 
+Credits
+----------
+
+Thanks to Eric Wastl for his marvelous Advent of code idea :)
