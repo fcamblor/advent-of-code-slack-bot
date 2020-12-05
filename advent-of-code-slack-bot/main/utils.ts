@@ -9,6 +9,11 @@ export function htmlToSlackMarkdown(html: string) {
         return line.replace(/^\s*([^\s].*)$/, "$1");
     }).join("\n");
 
+    // Enforcing we have carriage returns after some closing tags like headers
+    result = ["</h2>"].reduce((res, pattern) => {
+        return res.replace(new RegExp(`${pattern}(\n)?`, "g"), `${pattern}\n`);
+    }, result);
+
     var lines = result.split("\n");
     var resultWithoutParagraphs = '', paragraphStarted = false;
     for(var i=0; i<lines.length; i++) {
