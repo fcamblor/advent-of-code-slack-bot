@@ -478,8 +478,8 @@ Following commands are available :
       [/<pre><code>/g, "```"], [/<\/code><\/pre>/g, "```"],
       [/<code>/g, "`"], [/<\/code>/g, "`"],
       [/<em[^>]*>/g, "_"], [/<\/em>/g, "_"],
-      [/<a href="(http[^"]+)"[^>]*>([^<]+)<\/a>/g, "<$1|$2>"],
-      [/<a href="([^"]+)"[^>]*>([^<]+)<\/a>/g, "<https://adventofcode.com$1|$2>"],
+      [/<a [^>]*href="(http[^"]+)"[^>]*>([^<]+)<\/a>/g, "<$1|$2>"],
+      [/<a [^>]*href="([^"]+)"[^>]*>([^<]+)<\/a>/g, "<https://adventofcode.com$1|$2>"],
     ];
     return replacements.reduce((res, replacement) => {
       return res.replace(replacement[0], replacement[1]);
