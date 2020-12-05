@@ -1,6 +1,19 @@
 # <h1 align="center">Welcome to GoogleAppScript's Advent of Code Bot 👋</h1>
 > A Google App Script-based bot to manage advent-of-code Slack interactions
 
+Features
+----------
+
+Currently, bots allows to :
+
+- Display leaderboard through the `!leaderboard` command
+  <img src="./assets/Slack_bot_-_Leaderboard.png" width="480px" alt="Showing leaderboard" />
+- Be notified in the morning when a new problem appears
+  <img src="./assets/Slack bot - Publish daily new problem.png" width="1200px" alt="Publishing new daily problem" />
+- Be notified when some members are earning some points
+  <img src="./assets/Slack_bot_-_Progress_notification.png" width="480px" alt="Member progress notifications" />
+
+
 Installation instructions
 ----------
 
