@@ -11,6 +11,8 @@ const PROPS = {
 };
 
 const CURRENT_YEAR = new Date().getUTCFullYear();
+const CURRENT_MONTH = new Date().getUTCMonth() + 1;
+const CURRENT_DAY = new Date().getUTCDate();
 
 interface SlackEvent {
   text: string;
@@ -253,6 +255,9 @@ function doPost(e){
   } else if(payload.action === 'refreshLeaderboard') {
     AdventOfCodeBot.INSTANCE.refreshLeaderboard(payload.channelId);
     return;
+  } else if(payload.action === 'publishNewProblem') {
+    AdventOfCodeBot.INSTANCE.publishNewProblem(payload.channelId);
+    return;
   } else {
     AdventOfCodeBot.INSTANCE.log('POST event: ' + JSON.stringify(payload));
   }
@@ -347,6 +352,26 @@ Following commands are available :
     }
   }
 
+  publishNewProblem(channel: string) {
+    // Not publishing anything if we're not supposed to be in the advent period
+    if(CURRENT_MONTH !== 12 || CURRENT_DAY > 25) {
+      return;
+    }
+
+    var payloadText = UrlFetchApp.fetch(`https://adventofcode.com/${CURRENT_YEAR}/day/${CURRENT_DAY}`, {
+      method: 'get',
+      headers: {
+        'cookie': `session=${PROPS.ADVENT_OF_CODE_SESSION_COOKIE}`
+      }
+    }).getContentText();
+
+    // Extracting <article>...</article> tag
+    var articleSection = (/(<article[^>]*>(.|[\n\r])*<\/article>)/im).exec(payloadText)[1];
+    const slackMarkdown = AdventOfCodeBot.htmlToSlackMarkdown(articleSection);
+    this.botShouldSay(channel, slackMarkdown);
+    this.log("New problem requested and published to Slack");
+  }
+
   readPreviousLeaderboard() {
     const sheet = this.getSheetByName("Leaderboard");
     const leaderboardPayload = sheet.getRange(2, 1, 1, 1).getValues()[0][0];
@@ -416,6 +441,49 @@ Following commands are available :
       const logsSheet = this.ensureSheetCreated("Logs", null, null);
       logsSheet.appendRow([new Date(), text]);
     }
+  }
+
+  static htmlToSlackMarkdown(html: string) {
+    var result = html;
+
+    // Removing spaces
+    result = result.split("\n").map(line => {
+      return line.replace(/^\s*([^\s].*)$/, "$1");
+    }).join("\n");
+
+    var lines = result.split("\n");
+    var resultWithoutParagraphs = '', paragraphStarted = false;
+    for(var i=0; i<lines.length; i++) {
+      var line = lines[i];
+      if(line.substr(0, "<p>".length) === '<p>') {
+        paragraphStarted = true;
+        line = line.substr("<p>".length);
+      }
+
+      if(line.substr(-"</p>".length) === '</p>') {
+        line = line.substr(0, line.length-"</p>".length);
+        paragraphStarted = false;
+      }
+
+      resultWithoutParagraphs += line.trim() + (paragraphStarted?" ":"\n");
+    }
+
+    // Removing html tags
+    const replacements: [RegExp,string][] = [
+      [/<article[^>]+>/g, ""], [/<\/article>/g, ""],
+      [/<h2>/g, "*"], [/<\/h2>/g, "*"],
+      [/<ul>/g, ""], [/<\/ul>/g, ""],
+      [/<li>/g, "- "], [/<\/li>/g, ""],
+      [/<span[^>]*>([^<]+)<\/span>/g, "$1"],
+      [/<pre><code>/g, "```"], [/<\/code><\/pre>/g, "```"],
+      [/<code>/g, "`"], [/<\/code>/g, "`"],
+      [/<em[^>]*>/g, "_"], [/<\/em>/g, "_"],
+      [/<a href="(http[^"]+)"[^>]*>([^<]+)<\/a>/g, "<$1|$2>"],
+      [/<a href="([^"]+)"[^>]*>([^<]+)<\/a>/g, "<https://adventofcode.com$1|$2>"],
+    ];
+    return replacements.reduce((res, replacement) => {
+      return res.replace(replacement[0], replacement[1]);
+    }, resultWithoutParagraphs);
   }
 
   static isBotResettedEvent(event: SlackEvent): event is BotResettedEvent { return event.hasOwnProperty('bot_id'); }
