@@ -301,6 +301,7 @@ class AdventOfCodeBot {
 
   showHelp(event: ChannelMessageEvent) {
     const channel = event.channel;
+    this.log(`Help requested in channel ${channel}`);
 
     let message = `Hello ! I am a bot aimed at saying hello in this channel.
 *Note*: _I look for interactions only once I am invited on the channel._
@@ -316,6 +317,7 @@ Following commands are available :
 
   showLeaderboard(event: ChannelMessageEvent) {
     const channel = event.channel;
+    this.log(`Leaderboard requested in channel ${channel}`);
     const leaderboard = this.fetchLeaderboard();
     this.botShouldSay(channel, leaderboard.buildHallOfFameMessage(), event.thread_ts);
   }
