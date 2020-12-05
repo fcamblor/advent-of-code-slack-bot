@@ -52,8 +52,8 @@ Installation instructions
   |---------------|-------|---------|
   | LOG_ENABLED | true | This can be helpful to see logs, particularly at the beginning |
   | SLACK_CHALLENGE_ACTIVATED | true | Put this to true in order to allow Slack bot challenge |
-  | ADVENT_OF_CODE_PRIVATE_LEADERBOARD_CODE | <number> | Use your advent of code private leaderboard code (integer) here |
-  | ADVENT_OF_CODE_SESSION_COOKIE | <string> | Introspect queries made to advent of code to extract your session cookie value (in headers) and put it here |
+  | ADVENT_OF_CODE_PRIVATE_LEADERBOARD_CODE | _a number_ | Use your advent of code private leaderboard code (integer) here. You can simply get here in the URL when you navigate to https://adventofcode.com/2020/leaderboard/private/view/xxxxx (the code corresponds to `xxxxx`) |
+  | ADVENT_OF_CODE_SESSION_COOKIE | _a string_ | Introspect queries made to advent of code to extract your session cookie value (in headers) and put it here |
 
 
 ### Slack instance configuration
