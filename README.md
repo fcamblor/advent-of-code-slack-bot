@@ -124,8 +124,8 @@ CRONs have to be configured that way :
 
   | When          | URL to call | Payload |
   |---------------|-------------|---------|
-  | `*/15 * * * *` _(every 15min)_ | Your Google App Script URL (the one you get through `Publish > Deploy as web app` menu) | `{"action":"refreshLeaderboard","channelId":"xxxxxx"}`, fill the `channelId` properly |
-  | `4 5 * * *` _(once a day at 05:04 AM)_ *using UTC timezone (if you're using another timezone, please shift to your local time based on this* | Your Google App Script URL (the one you get through `Publish > Deploy as web app` menu) | `{"action":"publishNewPuzzle","channelId":"xxxxxx"}`, fill the `channelId` properly |
+  | `*/15 * * * *` _(every 15min, as advised by Eric Wastl)_ | Your Google App Script URL (the one you get through `Publish > Deploy as web app` menu) | `{"action":"refreshLeaderboard","channelId":"xxxxxx"}`, fill the `channelId` properly |
+  | `4 5 * * *` _(once a day at 05:04 AM, UTC Time)_ **Important: if your CRON is using another timezone, don't forget to shift time based on it** | Your Google App Script URL (the one you get through `Publish > Deploy as web app` menu) | `{"action":"publishNewPuzzle","channelId":"xxxxxx"}`, fill the `channelId` properly |
 
 The first time 15min CRON will be triggered, the bot is supposed to post a message into the Slack channel to welcome every members of the board.
 This will be a proof that everything has been setup properly.
