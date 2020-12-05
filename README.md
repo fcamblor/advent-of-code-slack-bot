@@ -17,6 +17,10 @@ Currently, bots allows to :
 Installation instructions
 ----------
 
+Don't be afraid by the long guidelines, I tried to be as detailed as possible.
+
+Overall, it should take you up to 10min to setup everything.
+
 ### Installation pre-requisites
 
 - `npm@3+`
