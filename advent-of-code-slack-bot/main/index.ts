@@ -443,6 +443,8 @@ Following commands are available :
     }
   }
 
+  // YES, that's a crappy implementation for HTML -> Slack markdown, but I don't have a lot of time
+  // to dedicate to this so let's keep it simple/stupid and make it work for previous problems :)
   static htmlToSlackMarkdown(html: string) {
     var result = html;
 
@@ -459,9 +461,15 @@ Following commands are available :
         paragraphStarted = true;
         line = line.substr("<p>".length);
       }
+      if(line.substr(0, "<li>".length) === '<li>') {
+        paragraphStarted = true;
+      }
 
       if(line.substr(-"</p>".length) === '</p>') {
         line = line.substr(0, line.length-"</p>".length);
+        paragraphStarted = false;
+      }
+      if(line.substr(-"</li>".length) === '</li>') {
         paragraphStarted = false;
       }
 
