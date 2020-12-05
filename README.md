@@ -8,8 +8,8 @@ Currently, bots allows to :
 
 - Display leaderboard through the `!leaderboard` command
   <img src="./assets/Slack_bot_-_Leaderboard.png" width="480px" alt="Showing leaderboard" />
-- Be notified in the morning when a new problem appears
-  <img src="./assets/Slack bot - Publish daily new problem.png" width="1200px" alt="Publishing new daily problem" />
+- Be notified in the morning when a new puzzle appears
+  <img src="./assets/Slack bot - Publish daily new puzzle.png" width="1200px" alt="Publishing new daily puzzle" />
 - Be notified when some members are earning some points
   <img src="./assets/Slack_bot_-_Progress_notification.png" width="480px" alt="Member progress notifications" />
 
@@ -108,7 +108,7 @@ Installation instructions
 
 ### CRON configuration
 
-To be able to show daily problems and new score earnings, you will need to configure some external CRONs to trigger the bot at certain points in time.
+To be able to show daily puzzles and new score earnings, you will need to configure some external CRONs to trigger the bot at certain points in time.
 
 You have several options :
 - Either find a CRON as a Service app in the cloud (for example : [Google Cloud Scheduler](https://console.cloud.google.com/cloudscheduler))
@@ -125,7 +125,7 @@ CRONs have to be configured that way :
   | When          | URL to call | Payload |
   |---------------|-------------|---------|
   | `*/15 * * * *` _(every 15min)_ | Your Google App Script URL (the one you get through `Publish > Deploy as web app` menu) | `{"action":"refreshLeaderboard","channelId":"xxxxxx"}`, fill the `channelId` properly |
-  | `4 5 * * *` _(once a day at 05:04 AM)_ *using UTC timezone (if you're using another timezone, please shift to your local time based on this* | Your Google App Script URL (the one you get through `Publish > Deploy as web app` menu) | `{"action":"publishNewProblem","channelId":"xxxxxx"}`, fill the `channelId` properly |
+  | `4 5 * * *` _(once a day at 05:04 AM)_ *using UTC timezone (if you're using another timezone, please shift to your local time based on this* | Your Google App Script URL (the one you get through `Publish > Deploy as web app` menu) | `{"action":"publishNewPuzzle","channelId":"xxxxxx"}`, fill the `channelId` properly |
 
 The first time 15min CRON will be triggered, the bot is supposed to post a message into the Slack channel to welcome every members of the board.
 This will be a proof that everything has been setup properly.

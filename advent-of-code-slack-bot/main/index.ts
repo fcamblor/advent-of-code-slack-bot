@@ -256,8 +256,8 @@ function doPost(e){
   } else if(payload.action === 'refreshLeaderboard') {
     AdventOfCodeBot.INSTANCE.refreshLeaderboard(payload.channelId);
     return;
-  } else if(payload.action === 'publishNewProblem') {
-    AdventOfCodeBot.INSTANCE.publishNewProblem(payload.channelId);
+  } else if(payload.action === 'publishNewPuzzle') {
+    AdventOfCodeBot.INSTANCE.publishNewPuzzle(payload.channelId);
     return;
   } else {
     AdventOfCodeBot.INSTANCE.log('POST event: ' + JSON.stringify(payload));
@@ -355,7 +355,7 @@ Following commands are available :
     }
   }
 
-  publishNewProblem(channel: string) {
+  publishNewPuzzle(channel: string) {
     // Not publishing anything if we're not supposed to be in the advent period
     if(CURRENT_MONTH !== 12 || CURRENT_DAY > 25) {
       return;
