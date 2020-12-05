@@ -2,7 +2,9 @@
   "name": "slack-bot",
   "version": "1.0.0",
   "description": "Slack bot for handling per-channel communications",
-  "scripts": {},
+  "scripts": {
+    "test": "npx jest"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/fcamblor/gas-bot-starter.git"
@@ -15,6 +17,9 @@
   "homepage": "https://github.com/fcamblor/gas-bot-starter#readme",
   "devDependencies": {
     "@google/clasp": "2.3.0",
+    "@types/jest": "26.0.16",
+    "jest": "26.6.3",
+    "ts-jest": "26.4.4",
     "typescript": "3.9.7"
   },
   "dependencies": {
