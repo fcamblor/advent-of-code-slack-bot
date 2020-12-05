@@ -478,16 +478,16 @@ Following commands are available :
 
     // Removing html tags
     const replacements: [RegExp,string][] = [
-      [/<article[^>]+>/g, ""], [/<\/article>/g, ""],
-      [/<h2>/g, "*"], [/<\/h2>/g, "*"],
-      [/<ul>/g, ""], [/<\/ul>/g, ""],
-      [/<li>/g, "- "], [/<\/li>/g, ""],
+      [/<article[^>]*>/g, ""], [/<\/article>/g, ""],
+      [/<h2[^>]*>/g, "*"], [/<\/h2>/g, "*"],
+      [/<ul[^>]*>/g, ""], [/<\/ul>/g, ""],
+      [/<li[^>]*>/g, "- "], [/<\/li>/g, ""],
       [/<span[^>]*>([^<]+)<\/span>/g, "$1"],
-      [/<pre><code>/g, "```"], [/<\/code><\/pre>/g, "```"],
-      [/<code>/g, "`"], [/<\/code>/g, "`"],
+      [/<pre[^>]*><code[^>]*>/g, "```"], [/<\/code><\/pre>/g, "```"],
+      [/<code[^>]*>/g, "`"], [/<\/code>/g, "`"],
       [/<em[^>]*>/g, "_"], [/<\/em>/g, "_"],
-      [/<a [^>]*href="(http[^"]+)"[^>]*>([^<]+)<\/a>/g, "<$1|$2>"],
-      [/<a [^>]*href="([^"]+)"[^>]*>([^<]+)<\/a>/g, "<https://adventofcode.com$1|$2>"],
+      [/<a[^>]*href="(http[^"]+)"[^>]*>([^<]+)<\/a>/g, "<$1|$2>"],
+      [/<a[^>]*href="([^"]+)"[^>]*>([^<]+)<\/a>/g, "<https://adventofcode.com$1|$2>"],
     ];
     return replacements.reduce((res, replacement) => {
       return res.replace(replacement[0], replacement[1]);
