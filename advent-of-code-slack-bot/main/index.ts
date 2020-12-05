@@ -370,6 +370,9 @@ Following commands are available :
 
     // Extracting <article>...</article> tag
     var articleSection = (/(<article[^>]*>(.|[\n\r])*<\/article>)/im).exec(payloadText)[1];
+    // Removing second article (when we get it) as we don't want to show second part of the puzzle,
+    // and more than that, we don't want to show part 1's answer either
+    articleSection = articleSection.split("</article>")[0] + "</article>";
     const slackMarkdown = htmlToSlackMarkdown(articleSection);
     this.botShouldSay(channel, slackMarkdown);
     this.log("New problem requested and published to Slack");
