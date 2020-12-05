@@ -85,7 +85,7 @@ Installation instructions
 
 ### Spreadsheet config & DB creation
 
-- Move to the `slack-sheet/` directory then run `npm install` on it
+- Move to the `advent-of-code-sheet/` directory then run `npm install` on it
 - Run `npx clasp create --type sheets` : a new google spreadsheet & app script should be created under your google account.
   - Copy generated google spreadsheet id ...
     <img src="./assets/Google_Spreadsheet_generated_id.png" width="800px" alt="Retrieving Google Spreadsheet id" />
