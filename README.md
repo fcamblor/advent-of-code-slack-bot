@@ -99,8 +99,34 @@ Installation instructions
 - In the spreadsheet, put following formula in a cell : `=SAY_HELLO()` : this will call code defined into your `main/index.ts`
   typescript file and can be useful if you would have to generate complex data into your spreadsheet.
 
-### Slack channel configuration
+### Slack channel
 
 - Open Slack and invite the bot into one of your channels (prefer to choose a testing channel to begin with) : `/invite @<bot_name>`
 - Channel help can be displayed by saying `!help`
- 
+- You can also try to show your leaderboard to check if everything is good by writing `!leaderboard`
+
+
+### CRON configuration
+
+To be able to show daily problems and new score earnings, you will need to configure some external CRONs to trigger the bot at certain points in time.
+
+You have several options :
+- Either find a CRON as a Service app in the cloud (for example : [Google Cloud Scheduler](https://console.cloud.google.com/cloudscheduler))
+- Setup a CRON job on a server somewhere
+
+Those calls will trigger some computation on the Bot which may imply some message being pushed on a Slack channel.
+To provide this Slack channel, you need to gather its ID :
+- Open the Google Sheet (the one that has been created in previous step)
+- Open the "Logs" tab in the spreadsheet
+- You should see some messages in the log, showing the channel id. Something like `Help requested in channel XXXXXX`, here it is your channel id. 
+
+CRONs have to be configured that way :
+
+  | When          | URL to call | Payload |
+  |---------------|-------------|---------|
+  | `*/15 * * * *` _(every 15min)_ | Your Google App Script URL (the one you get through `Publish > Deploy as web app` menu) | `{"action":"refreshLeaderboard","channelId":"xxxxxx"}`, fill the `channelId` properly |
+  | `4 5 * * *` _(once a day at 05:04 AM)_ *using UTC timezone (if you're using another timezone, please shift to your local time based on this* | Your Google App Script URL (the one you get through `Publish > Deploy as web app` menu) | `{"action":"publishNewProblem","channelId":"xxxxxx"}`, fill the `channelId` properly |
+
+The first time 15min CRON will be triggered, the bot is supposed to post a message into the Slack channel to welcome every members of the board.
+This will be a proof that everything has been setup properly.
+
