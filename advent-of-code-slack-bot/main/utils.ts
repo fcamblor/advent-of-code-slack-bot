@@ -40,7 +40,7 @@ export function htmlToSlackMarkdown(html: string) {
     // Removing html tags
     const replacements: [RegExp,string][] = [
         [/<article[^>]*>/g, ""], [/<\/article>/g, ""],
-        [/<h2[^>]*>/g, "*"], [/<\/h2>/g, "*"],
+        [/<h2[^>]*>/g, "*:calendar::calendar:"], [/<\/h2>/g, ":calendar::calendar:*"],
         [/<ul[^>]*>/g, ""], [/<\/ul>/g, ""],
         [/<li[^>]*>/g, "- "], [/<\/li>/g, ""],
         [/<span[^>]*>([^<]+)<\/span>/g, "$1"],
