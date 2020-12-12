@@ -135,7 +135,8 @@ class Leaderboard {
 
   buildHallOfFameMessage() {
     let message = `Leaderboard :
-${this.sortedMembers().map((m, idx) => `${Leaderboard.medalForIndex(idx)}${idx+1}) *[${m.score}]* ${m.gold_stars} ${m.silver_stars} ${m.name}`).join("\n")}
+${this.sortedMembers().map((m, idx) => 
+        `${""+(idx+1<10?"0":"")+(idx+1)}) ${m.gold_stars} ${m.silver_stars} *[${m.score}]* ${Leaderboard.medalForIndex(idx)}${m.name}`).join("\n")}
 `;
     return message;
   }
