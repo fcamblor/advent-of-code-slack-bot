@@ -52,5 +52,5 @@ export function htmlToSlackMarkdown(html: string) {
     ];
     return replacements.reduce((res, replacement) => {
         return res.replace(replacement[0], replacement[1]);
-    }, resultWithoutParagraphs);
+    }, resultWithoutParagraphs).trim()+"\n";
 }
