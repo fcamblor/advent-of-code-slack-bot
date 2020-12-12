@@ -46,7 +46,7 @@ export function htmlToSlackMarkdown(html: string) {
         [/<span[^>]*>([^<]+)<\/span>/g, "$1"],
         [/<pre[^>]*><code[^>]*>/g, "```"], [/<\/code><\/pre>/g, "```"],
         [/<code[^>]*>/g, "`"], [/<\/code>/g, "`"],
-        [/<em[^>]*>/g, "_"], [/<\/em>/g, "_"],
+        [/<em[^>]*>/g, "*"], [/<\/em>/g, "*"],
         [/<a[^>]*href="(http[^"]+)"[^>]*>([^<]+)<\/a>/g, "<$1|$2>"],
         [/<a[^>]*href="([^"]+)"[^>]*>([^<]+)<\/a>/g, "<https://adventofcode.com$1|$2>"],
     ];
