@@ -6,7 +6,15 @@ import {AllHtmlEntities} from 'html-entities';
 
 export function testArticle(directory: string, date: string) {
     test('Article conversion for '+date, () => {
-        const article = fs.readFileSync(`./test/${directory}/${date}.article.html`).toString('utf-8');
+        // Trying to open 'fixed' article prior to standard one
+        // (yes, I had to fix some articles because some of them fetched from the site have errors inside it that are
+        // fixed by the browser, and are then not visible to human eyes)
+        let filename = `${date}.article.fixed.html`;
+        if(!fs.existsSync(`./test/${directory}/${filename}`)) {
+            filename = `${date}.article.html`;
+        }
+
+        const article = fs.readFileSync(`./test/${directory}/${filename}`).toString('utf-8');
         const expectation = fs.readFileSync(`./test/${directory}/${date}.expectation.md`).toString('utf-8');
         expect(htmlToSlackMarkdown(article).trim()).toBe(expectation.trim());
     })
@@ -31,7 +39,15 @@ export async function createTestDataFor(year: string, day: string, fetchArticles
       .catch(error => console.log('error', error));
 
     articleFetchedPromise.then(() => {
-        const htmlArticle = fs.readFileSync(`./test/${year}/${year}-${day}.article.html`).toString('utf-8');
+        // Trying to open 'fixed' article prior to standard one
+        // (yes, I had to fix some articles because some of them fetched from the site have errors inside it that are
+        // fixed by the browser, and are then not visible to human eyes)
+        let filename = `${year}-${day}.article.fixed.html`;
+        if(!fs.existsSync(`./test/${year}/${filename}`)) {
+            filename = `${year}-${day}.article.html`;
+        }
+
+        const htmlArticle = fs.readFileSync(`./test/${year}/${filename}`).toString('utf-8');
         fs.writeFileSync(`./test/${year}/${year}-${day}.expectation.md`, htmlToSlackMarkdown(htmlArticle));
     });
 }

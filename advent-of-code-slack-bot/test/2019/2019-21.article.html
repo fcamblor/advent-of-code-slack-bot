@@ -25,7 +25,7 @@ AND D J
 </code></pre>
 <p>The Intcode program expects ASCII inputs and outputs.  It will begin by displaying a prompt; then, input the desired instructions one per line. End each line with a newline (ASCII code <code>10</code>). <em>When you have finished entering your program</em>, provide the command <code>WALK</code> followed by a newline to instruct the springdroid to begin surveying the hull.</p>
 <p>If the springdroid <em>falls into space</em>, an ASCII rendering of the last moments of its life will be produced.  In these, <code>@</code> is the springdroid, <code>#</code> is hull, and <code>.</code> is empty space.  For example, suppose you program the springdroid like this:
-</p><pre><code>NOT D J
+<pre><code>NOT D J
 WALK
 </code></pre>
 <p>This one-instruction program sets <code>J</code> to <em>true</em> if and only if there is no ground four tiles away.  In other words, it attempts to jump into any hole it finds:</p>
