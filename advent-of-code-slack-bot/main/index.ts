@@ -100,7 +100,6 @@ class Leaderboard {
   sortedMembers(): Member[] {
     return Object.keys(this.attrs.members)
         .map(k => this.attrs.members[k])
-        .sort((m1, m2) => m2.local_score - m1.local_score)
         .map(m => {
           const { gold_stars_count, silver_stars_count } = Object.keys(m.completion_day_level).reduce((starsStats, day) => {
             return {
@@ -118,7 +117,20 @@ class Leaderboard {
             silver_stars: Leaderboard.range(silver_stars_count).map(_ => '🌟').join(''),
             last_star_ts: m.last_star_ts
           };
+        }).sort((m1, m2) => {
+          if(m1.gold_stars_count === m2.gold_stars_count
+              && m1.silver_stars_count === m2.silver_stars_count) {
+            return m2.score - m1.score;
+          }
+          if(m1.gold_stars_count === m2.gold_stars_count) {
+            return m2.silver_stars_count - m1.silver_stars_count;
+          }
+          if((m2.gold_stars_count+m2.silver_stars_count) === (m1.gold_stars_count+m1.silver_stars_count)) {
+            return m2.gold_stars_count - m1.gold_stars_count;
+          }
+          return (m2.gold_stars_count+m2.silver_stars_count) - (m1.gold_stars_count+m1.silver_stars_count);
         });
+
   }
 
   buildHallOfFameMessage() {
