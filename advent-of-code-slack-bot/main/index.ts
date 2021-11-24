@@ -244,16 +244,20 @@ ${this.attrs.memberScoreDiffs.map(LeaderboardDiff.showProgressFor).join("\n")}`
     return JSON.stringify(this.attrs);
   }
 
+  static showNumberWithSign(value: number) {
+    return `${value>=0?'+':''}${value}`;
+  }
+
   static showProgressFor(diff: MemberScoreDiff) {
     const scoreMessages = [];
     if(diff.scoreDiff.scoreDelta.previous !== diff.scoreDiff.scoreDelta.actual) {
-      scoreMessages.push(`*[+${diff.scoreDiff.scoreDelta.actual - diff.scoreDiff.scoreDelta.previous} pts] `);
+      scoreMessages.push(`*[${LeaderboardDiff.showNumberWithSign(diff.scoreDiff.scoreDelta.actual - diff.scoreDiff.scoreDelta.previous)} pts]*`);
     }
     if(diff.scoreDiff.silverStarsDelta.previous !== diff.scoreDiff.silverStarsDelta.actual) {
-      scoreMessages.push(`*+${diff.scoreDiff.silverStarsDelta.actual - diff.scoreDiff.silverStarsDelta.previous}🌟 `);
+      scoreMessages.push(`*${LeaderboardDiff.showNumberWithSign(diff.scoreDiff.silverStarsDelta.actual - diff.scoreDiff.silverStarsDelta.previous)}*\uD83C\uDF1F`);
     }
     if(diff.scoreDiff.goldStarsDelta.previous !== diff.scoreDiff.goldStarsDelta.actual) {
-      scoreMessages.push(`*+${diff.scoreDiff.goldStarsDelta.actual - diff.scoreDiff.goldStarsDelta.previous}⭐ `);
+      scoreMessages.push(`*${LeaderboardDiff.showNumberWithSign(diff.scoreDiff.goldStarsDelta.actual - diff.scoreDiff.goldStarsDelta.previous)}*\u2B50`);
     }
 
     return `- *${diff.member.name}*: ${scoreMessages.join(', ')}`;
