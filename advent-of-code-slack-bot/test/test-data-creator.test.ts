@@ -5,6 +5,7 @@ const ADVENT_OF_CODE_SESSION = "TO BE COMPLETED WITH YOURS";
 
 test('ok', () => console.log("This is an empty test"));
 /*
+generateTestDataFor("2022", 1, 5, ADVENT_OF_CODE_SESSION);
 generateTestDataFor("2019", 1, 25, ADVENT_OF_CODE_SESSION);
 generateTestDataFor("2018", 1, 25, ADVENT_OF_CODE_SESSION);
 generateTestDataFor("2017", 1, 25, ADVENT_OF_CODE_SESSION);
