@@ -26,5 +26,5 @@ result: 00000000000000000000000000000<em>1</em>0000<em>0</em>0  (decimal 64)
 </code></pre>
 <p><code>64</code> is written to address <code>8</code> instead, overwriting the value that was there previously.</p>
 <p>To initialize your ferry's docking program, you need the sum of all values left in memory after the initialization program completes. (The entire 36-bit address space begins initialized to the value <code>0</code> at every address.) In the above example, only two values in memory are not zero - <code>101</code> (at address <code>7</code>) and <code>64</code> (at address <code>8</code>) - producing a sum of <em><code>165</code></em>.</p>
-<p>Execute the initialization program. <em>What is the sum of all values left in memory after it completes?</em></p>
+<p>Execute the initialization program. <em>What is the sum of all values left in memory after it completes?</em> (Do not truncate the sum to 36 bits.)</p>
 </article>
