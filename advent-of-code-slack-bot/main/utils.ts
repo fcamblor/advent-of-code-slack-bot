@@ -5,8 +5,15 @@ export function htmlToSlackMarkdown(html: string) {
     var result = html;
 
     // Removing spaces
+    let preTagStarted = false;
     result = result.split("\n").map(line => {
-        return line.replace(/^\s*([^\s].*)$/, "$1");
+        const transformedLine = preTagStarted?line:line.replace(/^\s*([^\s].*)$/, "$1");
+
+        // Avoiding to remove space in <pre> blocks
+        if(line.indexOf("<pre")!==-1) { preTagStarted = true; }
+        if(line.lastIndexOf("</pre") > line.lastIndexOf("<pre")) { preTagStarted = false; }
+
+        return transformedLine;
     }).join("\n");
 
     // Enforcing we have carriage returns after some closing tags like headers
@@ -34,7 +41,7 @@ export function htmlToSlackMarkdown(html: string) {
             paragraphStarted = false;
         }
 
-        resultWithoutParagraphs += line.trim() + (paragraphStarted?" ":"\n");
+        resultWithoutParagraphs += line /* .trim() */ + (paragraphStarted?" ":"\n");
     }
 
     // Removing html tags
