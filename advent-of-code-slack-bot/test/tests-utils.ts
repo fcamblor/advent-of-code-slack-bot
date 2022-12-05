@@ -4,7 +4,7 @@ import * as fetch from 'node-fetch';
 import {AllHtmlEntities} from 'html-entities';
 
 
-export function testArticle(directory: string, date: string) {
+export function testArticle(directory: string, date: string, debugSteps: boolean = false) {
     test('Article conversion for '+date, () => {
         // Trying to open 'fixed' article prior to standard one
         // (yes, I had to fix some articles because some of them fetched from the site have errors inside it that are
@@ -16,7 +16,7 @@ export function testArticle(directory: string, date: string) {
 
         const article = fs.readFileSync(`./test/${directory}/${filename}`).toString('utf-8');
         const expectation = fs.readFileSync(`./test/${directory}/${date}.expectation.md`).toString('utf-8');
-        expect(htmlToSlackMarkdown(article).trim()).toBe(expectation.trim());
+        expect(htmlToSlackMarkdown(article, debugSteps?{pathPattern: `./test/${directory}/${date}.debug.[step].txt`}:undefined).trim()).toBe(expectation.trim());
     })
 }
 

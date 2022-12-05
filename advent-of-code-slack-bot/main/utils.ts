@@ -1,8 +1,12 @@
 
 // YES, that's a crappy implementation for HTML -> Slack markdown, but I don't have a lot of time
 // to dedicate to this so let's keep it simple/stupid and make it work for previous problems :)
-export function htmlToSlackMarkdown(html: string) {
+import * as fs from "fs";
+
+export function htmlToSlackMarkdown(html: string, debugSteps: { pathPattern: string }|undefined = undefined) {
     var result = html;
+
+    debugStep(0, result, `At the beginning`, debugSteps);
 
     // Removing spaces
     let preTagStarted = false;
@@ -16,10 +20,14 @@ export function htmlToSlackMarkdown(html: string) {
         return transformedLine;
     }).join("\n");
 
+    debugStep(1, result, `After starting spaces replacements`, debugSteps);
+
     // Enforcing we have carriage returns after some closing tags like headers
     result = ["</h2>"].reduce((res, pattern) => {
         return res.replace(new RegExp(`${pattern}(\n)?`, "g"), `${pattern}\n`);
     }, result);
+
+    debugStep(2, result, `After carriage returns replacements after headings`, debugSteps);
 
     var lines = result.split("\n");
     var resultWithoutParagraphs = '', paragraphStarted = false;
@@ -44,6 +52,8 @@ export function htmlToSlackMarkdown(html: string) {
         resultWithoutParagraphs += line /* .trim() */ + (paragraphStarted?" ":"\n");
     }
 
+    debugStep(3, resultWithoutParagraphs, `After paragraphs replacements`, debugSteps);
+
     // Removing html tags
     const replacements: [RegExp,string][] = [
         [/<article[^>]*>/g, ""], [/<\/article>/g, ""],
@@ -58,7 +68,18 @@ export function htmlToSlackMarkdown(html: string) {
         [/<a[^>]*href="(http[^"]+)"[^>]*>([^<]+)<\/a>/g, "<$1|$2>"],
         [/<a[^>]*href="([^"]+)"[^>]*>([^<]+)<\/a>/g, "<https://adventofcode.com$1|$2>"],
     ];
-    return replacements.reduce((res, replacement) => {
-        return res.replace(replacement[0], replacement[1]);
+    return replacements.reduce((res, replacement, replacementIdx) => {
+        const transformedContent = res.replace(replacement[0], replacement[1]);
+        debugStep(replacementIdx+4, result, `After [${replacement[0].toString()}] => [${replacement[1].toString()}] replacement`, debugSteps);
+        return transformedContent;
     }, resultWithoutParagraphs).trim()+"\n";
+}
+
+function debugStep(step: number, actualContent: string, comment: string, debugSteps: { pathPattern: string }|undefined): void {
+    if(debugSteps) {
+        fs.writeFileSync(debugSteps.pathPattern.replace("[step]", ""+(step)), `
+### ${comment} :
+
+${actualContent}`)
+    }
 }
