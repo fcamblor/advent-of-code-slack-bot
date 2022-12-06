@@ -340,13 +340,21 @@ Following commands are available :
   }
 
   fetchLeaderboard() {
-    var payloadText = UrlFetchApp.fetch(`https://adventofcode.com/${CURRENT_YEAR}/leaderboard/private/view/${PROPS.ADVENT_OF_CODE_PRIVATE_LEADERBOARD_CODE}.json`, {
+    let url = `https://adventofcode.com/${CURRENT_YEAR}/leaderboard/private/view/${PROPS.ADVENT_OF_CODE_PRIVATE_LEADERBOARD_CODE}.json`;
+    let params = {
       method: 'get',
       headers: {
         'cookie': `session=${PROPS.ADVENT_OF_CODE_SESSION_COOKIE}`
       }
-    }).getContentText();
-    this.log("leaderboard payload : "+payloadText);
+    } as const;
+    var payloadText = UrlFetchApp.fetch(url, params).getContentText();
+    this.log(`leaderboard payload : ${JSON.stringify({
+      request: {
+        url,
+        params
+      },
+      response: payloadText
+    }, null, '  ')}`);
     return Leaderboard.fromStringifiedJSON(payloadText);
   }
 
