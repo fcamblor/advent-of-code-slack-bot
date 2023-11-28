@@ -19,7 +19,7 @@ Installation instructions
 
 Don't be afraid by the long guidelines, I tried to be as detailed as possible.
 
-Overall, it should take you up to 10min to setup everything.
+Overall, it should take you up to ~1h to setup everything the first time (and ~10-20min every year to get back to the context and update different project properties).
 
 ### Installation pre-requisites
 
